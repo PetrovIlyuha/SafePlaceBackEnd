@@ -1,0 +1,13 @@
+{
+  "/": "api full documentation",
+  "/signup": "singup for new user",
+  "/signin": "signin for currently existing user",
+  "/signout": "signout for currently existing user",
+  "/users": "get all users",
+  "/user/:userId": "get user",
+  "/user/:userId": "update/delete user",
+  "/posts": "get all posts",
+  "/post/new/:userId": "create new post, authentication is mandatory",
+  "/post/by/:userId": "get all posts by user, authentication is mandatory",
+  "/post/:postId": "update/delete existing post, authentication is mandatory"
+}
