@@ -4,15 +4,19 @@ const fs = require("fs");
 const _ = require("lodash");
 
 exports.userById = (req, res, next, id) => {
-  User.findById(id).exec((err, user) => {
-    if (err || !user) {
-      return res.status(400).json({
-        error: "User not found"
-      });
-    }
-    req.profile = user; // adds profile object in req with user info
-    next();
-  });
+  User.findById(id)
+    // populate followers and following users array
+    .populate("following", "_id name")
+    .populate("followers", "_id name")
+    .exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: "User not found"
+        });
+      }
+      req.profile = user; // adds profile object in req with user info
+      next();
+    });
 };
 
 exports.hasAuthorization = (req, res, next) => {
@@ -41,22 +45,6 @@ exports.getUser = (req, res) => {
   req.profile.salt = undefined;
   return res.json(req.profile);
 };
-
-// exports.updateUser = (req, res, next) => {
-//   let user = req.profile;
-//   user = _.extend(user, req.body); // extend mutates the source object
-//   user.updated = Date.now();
-//   user.save(err => {
-//     if (err) {
-//       return res.status(400).json({
-//         error: "You are not authorized to perform actions to update profile"
-//       });
-//     }
-//     user.hashed_password = undefined;
-//     user.salt = undefined;
-//     res.json({ user });
-//   });
-// };
 
 exports.updateUser = (req, res, next) => {
   let form = new formidable.IncomingForm();
@@ -109,4 +97,71 @@ exports.deleteUser = (req, res, next) => {
         "User deleted successfully...We'll wait for you to come back to our service."
     });
   });
+};
+
+// follow unfollow
+exports.addFollowing = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.userId,
+    { $push: { following: req.body.followId } },
+    (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      next();
+    }
+  );
+};
+
+exports.addFollower = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.followId,
+    { $push: { followers: req.body.userId } },
+    { new: true }
+  )
+    .populate("following", "_id name")
+    .populate("followers", "_id name")
+    .exec((err, result) => {
+      if (err) {
+        return res.status(400).json({
+          error: err
+        });
+      }
+      result.hashed_password = undefined;
+      result.salt = undefined;
+      res.json(result);
+    });
+};
+
+exports.removeFollowing = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.userId,
+    { $pull: { following: req.body.unfollowId } },
+    (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      next();
+    }
+  );
+};
+
+exports.removeFollower = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.unfollowId,
+    { $pull: { followers: req.body.userId } },
+    { new: true }
+  )
+    .populate("following", "_id name")
+    .populate("followers", "_id name")
+    .exec((err, result) => {
+      if (err) {
+        return res.status(400).json({
+          error: err
+        });
+      }
+      result.hashed_password = undefined;
+      result.salt = undefined;
+      res.json(result);
+    });
 };
