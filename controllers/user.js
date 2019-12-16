@@ -113,7 +113,7 @@ exports.addFollowing = (req, res, next) => {
   );
 };
 
-exports.addFollower = (req, res, next) => {
+exports.addFollower = (req, res) => {
   User.findByIdAndUpdate(
     req.body.followId,
     { $push: { followers: req.body.userId } },
