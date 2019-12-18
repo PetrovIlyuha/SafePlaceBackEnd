@@ -8,7 +8,8 @@ const {
   deletePost,
   isPoster,
   updatePost,
-  userPhoto
+  userPhoto,
+  singlePost
 } = require("../controllers/post");
 const { createPostValidator } = require("../validator");
 const { requireSignIn } = require("../controllers/auth");
@@ -26,6 +27,7 @@ router.post(
 );
 router.get("/posts/by/:userId", requireSignIn, postsByUser);
 router.put("/post/:postId", requireSignIn, isPoster, updatePost);
+router.get("/post/:postId", singlePost);
 router.delete("/post/:postId", requireSignIn, isPoster, deletePost);
 // any route containing userId our app will first execute findById();
 router.param("userId", userById);
